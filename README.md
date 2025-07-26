@@ -1,8 +1,8 @@
 # Sim-Rating - A Simple 5-Star Rating System for PHP
 
-[![Latest Version](https://img.shields.io/packagist/v/emleons/sim-rating.svg)](https://packagist.org/packages/emleons/sim-rating)
-[![Tests](https://github.com/emleons/sim-rating/actions/workflows/tests.yml/badge.svg)](https://github.com/emleons/sim-rating/actions/workflows/tests.yml)
-[![License](https://img.shields.io/github/license/emleons/sim-rating.svg)](https://github.com/emleons/sim-rating/blob/main/LICENSE)
+[![Latest Version](https://img.shields.io/packagist/v/emleonstz/sim-rating.svg)](https://packagist.org/packages/emleonstz/sim-rating)
+[![Tests](https://github.com/emleonstz/sim-rating/actions/workflows/tests.yml/badge.svg)](https://github.com/emleonstz/sim-rating/actions/workflows/tests.yml)
+[![License](https://img.shields.io/github/license/emleonstz/sim-rating.svg)](https://github.com/emleonstz/sim-rating/blob/main/LICENSE)
 
 Sim-Rating is a lightweight, framework-agnostic PHP library for displaying and calculating 5-star ratings. It supports multiple display formats (stars, bars, JSON) and is highly customizable.
 
@@ -28,7 +28,7 @@ composer require emleons/sim-rating
 ```php
 use Emleons\SimRating\Rating;
 
-// Initialize with rating counts
+// Make sure you are having an array with the given keys to Initialize with rating counts
 $ratings = [
     'one_star' => 10,
     'two_star' => 20,
