@@ -18,11 +18,10 @@ class HtmlRenderer implements RendererInterface
     {
         $options = $this->rating->getOptions();
 
-        if ($options['template'] && is_file($options['template'])) {
-            return $this->renderCustomTemplate($options['template']);
-        }
-
-        return $this->renderDefault();
+        return match ($options['type']) {
+            'bars' => $this->renderBars(),
+            default => $this->renderDefault()
+        };
     }
 
     protected function renderDefault(): string
@@ -143,5 +142,125 @@ SVG;
         ob_start();
         include $templatePath;
         return ob_get_clean();
+    }
+    protected function renderBars(): string
+    {
+        $options = $this->rating->getOptions();
+        $distribution = $this->rating->getDistribution();
+        $ratings = $this->rating->getRatings();
+
+        $css = $this->generateBarCSS($options);
+        $bars = $this->generateBarHTML($distribution, $ratings, $options);
+
+        return <<<HTML
+        <div class="sim-rating-bars-container">
+            <style>{$css}</style>
+            {$bars}
+            {$this->renderSummary()}
+        </div>
+        HTML;
+    }
+
+    protected function generateBarCSS(array $options): string
+    {
+        $color = $options['color'] ?? '#4a90e2';
+        $height = $options['bar_height'] ?? '20px';
+        $spacing = $options['bar_spacing'] ?? '8px';
+        $borderRadius = $options['bar_border_radius'] ?? '4px';
+
+        return <<<CSS
+        .sim-rating-bars-container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .sim-rating-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: {$spacing};
+        }
+        .sim-rating-bar-label {
+            width: 80px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .sim-rating-bar-bg {
+            flex-grow: 1;
+            background: #f5f5f5;
+            border-radius: {$borderRadius};
+            height: {$height};
+            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .sim-rating-bar-fill {
+            height: 100%;
+            background: {$color};
+            border-radius: {$borderRadius};
+            transition: width 0.6s ease-out;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .sim-rating-bar-percent {
+            width: 50px;
+            text-align: right;
+            font-size: 0.85em;
+            color: #666;
+            margin-left: 10px;
+        }
+        .sim-rating-summary {
+            margin-top: 15px;
+            font-size: 0.95em;
+            color: #444;
+        }
+        CSS;
+    }
+
+    protected function generateBarHTML(array $distribution, array $ratings, array $options): string
+    {
+        $html = '';
+        $starLabels = [
+            'five_star' => '5-star',
+            'four_star' => '4-star',
+            'three_star' => '3-star',
+            'two_star' => '2-star',
+            'one_star' => '1-star'
+        ];
+
+        foreach ($starLabels as $key => $label) {
+            $percentage = $distribution[$key] ?? 0;
+            $count = $ratings[$key] ?? 0;
+
+            $html .= <<<HTML
+            <div class="sim-rating-bar">
+                <div class="sim-rating-bar-label">
+                    {$label}: {$count}
+                </div>
+                <div class="sim-rating-bar-bg">
+                    <div class="sim-rating-bar-fill" style="width: {$percentage}%"></div>
+                </div>
+                <div class="sim-rating-bar-percent">
+                    {$percentage}%
+                </div>
+            </div>
+            HTML;
+        }
+
+        return $html;
+    }
+
+    protected function renderSummary(): string
+    {
+        if (!$this->rating->getOptions()['show_summary']) {
+            return '';
+        }
+
+        $average = $this->rating->getAverage();
+        $total = $this->rating->getTotal();
+
+        return <<<HTML
+        <div class="sim-rating-summary">
+            Average: <strong>{$average}</strong> from <strong>{$total}</strong> total ratings
+        </div>
+        HTML;
     }
 }
