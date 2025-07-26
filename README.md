@@ -26,7 +26,7 @@ composer require emleons/sim-rating
 ## Basic Usage
 
 ```php
-use SimRating\Rating;
+use Emleons\SimRating\Rating;
 
 // Initialize with rating counts
 $ratings = [
