@@ -149,7 +149,7 @@ $currentOptions = $rating->getOptions();
 {!! $rating->render() !!}
 ```
 
-### 💡 Pro Tips
+### 💡 Important Tips
 1. Always include all 5 star rating keys
 2. Set `show_summary` based on your display needs
 3. Use `interactive` only when you need user ratings
