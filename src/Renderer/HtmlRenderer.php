@@ -54,28 +54,11 @@ class HtmlRenderer implements RendererInterface
     protected function renderStar(string $type, int $position): string
     {
         $options = $this->rating->getOptions();
-
-        // Use custom color for empty stars if specified
-        $emptyColor = $options['empty_color'] ?? '#ddd';
-        $color = $type === 'empty' ? $emptyColor : $options['color'];
+        $color = $type === 'empty' ? '#ddd' : $options['color'];
         $size = $options['size'];
 
-        if ($options['style'] === 'svg') {
-            return $this->renderSvgStar($type, $color, $size, $position);
-        }
-
-        // Default CSS-based star
-        $class = $type === 'half' ? 'fa-star-half-alt' : 'fa-star';
-        $prefix = $type === 'empty' ? 'far' : 'fas';
-
-        return sprintf(
-            '<i class="%s %s" style="color: %s; font-size: %s;" data-rating-value="%d"></i>',
-            $prefix,
-            $class,
-            $color,
-            $size,
-            $position
-        );
+        // Use SVG as default
+        return $this->renderSvgStar($type, $color, $size, $position);
     }
 
     protected function renderStars(float $average): string
@@ -106,8 +89,27 @@ class HtmlRenderer implements RendererInterface
 
     protected function renderSvgStar(string $type, string $color, string $size, int $position): string
     {
-        // SVG star implementation would go here
-        return '';
+        $fill = $type === 'empty' ? 'none' : $color;
+        $stroke = $color;
+        $strokeWidth = 1;
+        $percentage = $type === 'half' ? '50%' : '100%';
+
+        return <<<SVG
+    <svg width="$size" height="$size" viewBox="0 0 24 24" data-rating-value="$position">
+        <defs>
+            <linearGradient id="grad{$position}">
+                <stop offset="$percentage" stop-color="$color"/>
+                <stop offset="$percentage" stop-color="transparent"/>
+            </linearGradient>
+        </defs>
+        <path 
+            fill="url(#grad{$position})" 
+            stroke="$stroke" 
+            stroke-width="$strokeWidth"
+            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+        />
+    </svg>
+SVG;
     }
 
     protected function renderCustomTemplate(string $templatePath): string
