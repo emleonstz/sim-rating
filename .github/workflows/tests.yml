@@ -4,12 +4,42 @@ on: [push, pull_request]
 
 jobs:
   tests:
+    name: PHP ${{ matrix.php }} Tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.2']  # Add more PHP versions if needed
+
     steps:
       - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ matrix.php }}
           coverage: none
-      - run: composer install
-      - run: ./vendor/bin/phpunit
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run tests with JUnit output
+        run: |
+          mkdir -p test-reports
+          ./vendor/bin/phpunit --log-junit test-reports/junit.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: test-reports
+
+      - name: Show test summary
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: PHPUnit Tests
+          path: test-reports/junit.xml
+          reporter: java-junit
+          fail-on-error: false
