@@ -25,6 +25,8 @@ composer require emleons/sim-rating
 ## Basic Usage
 
 ```php
+require('vendor/autoload.php');
+
 use Emleons\SimRating\Rating;
 
 // Make sure you are having an array with the given keys to Initialize with rating counts
