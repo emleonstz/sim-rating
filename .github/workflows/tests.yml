@@ -2,6 +2,14 @@ name: Tests
 
 on: [push, pull_request]
 
+# Add permissions at workflow level
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+  statuses: write
+
 jobs:
   tests:
     name: PHP ${{ matrix.php }} Tests
