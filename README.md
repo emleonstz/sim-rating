@@ -67,7 +67,7 @@ $rating = new Rating($ratings, [
     'size' => '24px',
     'show_total' => false,
     'interactive' => true,
-    '' => false //requred
+    'show_summary' => false //requred
 ]);
 
 // Change options later
