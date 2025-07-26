@@ -4,11 +4,11 @@
 [![Tests](https://github.com/emleonstz/sim-rating/actions/workflows/tests.yml/badge.svg)](https://github.com/emleonstz/sim-rating/actions/workflows/tests.yml)
 [![License](https://img.shields.io/github/license/emleonstz/sim-rating.svg)](https://github.com/emleonstz/sim-rating/blob/main/LICENSE)
 
-Sim-Rating is a lightweight, framework-agnostic PHP library for displaying and calculating 5-star ratings. It supports multiple display formats (stars, bars, JSON) and is highly customizable.
+Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ratings. It supports multiple display formats (stars, bars, JSON) and is highly customizable and works with any php frame work.
 
 ## Features
 
-- 🎯 Framework-agnostic PHP implementation
+- 🎯 Works with PHP Framework and PHP plain implementation
 - ⭐ Multiple output formats (HTML, JSON, SVG)
 - 🎨 Customizable colors, sizes and styles
 - 📊 Calculate averages, totals and distributions
