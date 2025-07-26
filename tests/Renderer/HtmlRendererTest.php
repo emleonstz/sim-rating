@@ -51,15 +51,28 @@ class HtmlRendererTest extends TestCase
 
     public function testRenderStars()
     {
-        $rating = new SimRatingRating([]);
+        $ratings = [
+            'one_star' => 0,
+            'two_star' => 0,
+            'three_star' => 0,
+            'four_star' => 1,
+            'five_star' => 1
+        ];
+
+        $rating = new SimRatingRating($ratings);
         $renderer = new RendererHtmlRenderer($rating);
+
+        // Get the options from the rating
+        $options = $rating->getOptions();
 
         // Test reflection to access protected method
         $reflection = new \ReflectionClass($renderer);
         $method = $reflection->getMethod('renderStars');
         $method->setAccessible(true);
 
-        $output = $method->invoke($renderer, 3.5);
+        // Pass both required arguments
+        $output = $method->invoke($renderer, 3.5, $options);
+
         $this->assertStringContainsString('<svg', $output);
         $this->assertStringContainsString('stop-color="#ffc107"', $output);
     }
