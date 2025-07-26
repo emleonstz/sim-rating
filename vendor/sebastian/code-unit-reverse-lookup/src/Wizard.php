@@ -12,9 +12,11 @@ namespace SebastianBergmann\CodeUnitReverseLookup;
 use function array_merge;
 use function assert;
 use function class_exists;
+use function function_exists;
 use function get_declared_classes;
 use function get_declared_traits;
 use function get_defined_functions;
+use function is_array;
 use function is_int;
 use function is_string;
 use function range;
@@ -64,6 +66,8 @@ final class Wizard
         $classes = get_declared_classes();
         $traits  = get_declared_traits();
 
+        assert(is_array($traits));
+
         foreach (array_merge($classes, $traits) as $classOrTrait) {
             assert(class_exists($classOrTrait) || trait_exists($classOrTrait));
 
@@ -82,6 +86,8 @@ final class Wizard
     private function processFunctions(): void
     {
         foreach (get_defined_functions()['user'] as $function) {
+            assert(function_exists($function));
+
             if (isset($this->processedFunctions[$function])) {
                 continue;
             }

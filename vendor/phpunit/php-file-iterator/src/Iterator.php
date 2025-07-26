@@ -9,6 +9,7 @@
  */
 namespace SebastianBergmann\FileIterator;
 
+use function assert;
 use function preg_match;
 use function realpath;
 use function str_ends_with;
@@ -54,6 +55,8 @@ final class Iterator extends FilterIterator
     public function accept(): bool
     {
         $current = $this->getInnerIterator()->current();
+
+        assert($current instanceof SplFileInfo);
 
         $filename = $current->getFilename();
         $realPath = $current->getRealPath();

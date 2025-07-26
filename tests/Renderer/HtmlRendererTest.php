@@ -3,9 +3,10 @@
 namespace SimRating\Tests\Renderer;
 
 use Emleons\SimRating\Rating as SimRatingRating;
+use Emleons\SimRating\Renderer\HtmlRenderer as RendererHtmlRenderer;
 use PHPUnit\Framework\TestCase;
 use SimRating\Rating;
-use Emleons\SimRating\Renderer\HtmlRenderer;
+use SimRating\Renderer\HtmlRenderer;
 
 class HtmlRendererTest extends TestCase
 {
@@ -19,11 +20,12 @@ class HtmlRendererTest extends TestCase
             'five_star' => 1
         ]);
 
-        $renderer = new HtmlRenderer($rating);
+        $renderer = new RendererHtmlRenderer($rating);
         $output = $renderer->render();
 
         $this->assertStringContainsString('data-rating-average="4.5"', $output);
-        $this->assertStringContainsString('fa-star', $output);
+        $this->assertStringContainsString('<svg', $output); // Check for SVG instead of fa-star
+        $this->assertStringContainsString('d="M12 17.27', $output); // Check for star path
     }
 
     public function testRenderWithCustomOptions()
@@ -39,24 +41,26 @@ class HtmlRendererTest extends TestCase
             'size' => '2em'
         ]);
 
-        $renderer = new HtmlRenderer($rating);
+        $renderer = new RendererHtmlRenderer($rating);
         $output = $renderer->render();
 
-        // Should find the custom color in full stars
-        $this->assertStringContainsString('color: #ff0000', $output);
-        $this->assertStringContainsString('font-size: 2em', $output);
+        $this->assertStringContainsString('stop-color="#ff0000"', $output);
+        $this->assertStringContainsString('width="2em"', $output);
+        $this->assertStringContainsString('height="2em"', $output);
     }
 
     public function testRenderStars()
     {
         $rating = new SimRatingRating([]);
-        $renderer = new HtmlRenderer($rating);
+        $renderer = new RendererHtmlRenderer($rating);
 
         // Test reflection to access protected method
         $reflection = new \ReflectionClass($renderer);
         $method = $reflection->getMethod('renderStars');
         $method->setAccessible(true);
 
-        $this->assertStringContainsString('fa-star', $method->invoke($renderer, 3.5));
+        $output = $method->invoke($renderer, 3.5);
+        $this->assertStringContainsString('<svg', $output);
+        $this->assertStringContainsString('stop-color="#ffc107"', $output);
     }
 }

@@ -84,11 +84,11 @@ final class Differ
         reset($to);
 
         foreach ($common as $token) {
-            while ((/* from-token */ reset($from)) !== $token) {
+            while (($fromToken = reset($from)) !== $token) {
                 $diff[] = [array_shift($from), self::REMOVED];
             }
 
-            while ((/* to-token */ reset($to)) !== $token) {
+            while (($toToken = reset($to)) !== $token) {
                 $diff[] = [array_shift($to), self::ADDED];
             }
 
@@ -137,7 +137,7 @@ final class Differ
         return new TimeEfficientLongestCommonSubsequenceCalculator;
     }
 
-    private function calculateEstimatedFootprint(array $from, array $to): int
+    private function calculateEstimatedFootprint(array $from, array $to): float|int
     {
         $itemSize = PHP_INT_SIZE === 4 ? 76 : 144;
 

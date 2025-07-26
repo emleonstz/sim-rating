@@ -1183,6 +1183,7 @@ return array(
     'SebastianBergmann\\LinesOfCode\\IllogicalValuesException' => $vendorDir . '/sebastian/lines-of-code/src/Exception/IllogicalValuesException.php',
     'SebastianBergmann\\LinesOfCode\\LineCountingVisitor' => $vendorDir . '/sebastian/lines-of-code/src/LineCountingVisitor.php',
     'SebastianBergmann\\LinesOfCode\\LinesOfCode' => $vendorDir . '/sebastian/lines-of-code/src/LinesOfCode.php',
+    'SebastianBergmann\\LinesOfCode\\NegativeValueException' => $vendorDir . '/sebastian/lines-of-code/src/Exception/NegativeValueException.php',
     'SebastianBergmann\\LinesOfCode\\RuntimeException' => $vendorDir . '/sebastian/lines-of-code/src/Exception/RuntimeException.php',
     'SebastianBergmann\\ObjectEnumerator\\Enumerator' => $vendorDir . '/sebastian/object-enumerator/src/Enumerator.php',
     'SebastianBergmann\\ObjectReflector\\ObjectReflector' => $vendorDir . '/sebastian/object-reflector/src/ObjectReflector.php',
