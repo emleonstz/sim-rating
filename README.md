@@ -10,6 +10,21 @@
 
 Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ratings. It supports multiple display formats (stars, bars, JSON) and is highly customizable and works with any php frame work.
 
+<div align="center">
+
+### Default Star Rating
+<img src="src/img/s1.png" alt="5-star rating display" width="600">
+
+```php
+// Default star output
+$rating->render('html');
+```
+
+### Custom Bar Rating  
+<img src="src/img/s2.png" alt="Bar rating display" width="600">
+
+</div>
+
 
 ## Features
 
@@ -28,64 +43,135 @@ Install via Composer:
 composer require emleons/sim-rating
 ```
 
-## Basic Usage
-
+### 🌟 Basic Implementation
 ```php
 require('vendor/autoload.php');
-
 use Emleons\SimRating\Rating;
 
-// Please make sure you are having an array with the given keys to Initialize with rating counts
+// Initialize with rating counts (all keys required)
 $ratings = [
-    'one_star' => 10,
-    'two_star' => 20,
-    'three_star' => 30,
-    'four_star' => 40,
-    'five_star' => 50
+    'one_star' => 10,    // Required
+    'two_star' => 20,    // Required
+    'three_star' => 30,  // Required
+    'four_star' => 40,   // Required
+    'five_star' => 50    // Required
 ];
 
 $rating = new Rating($ratings);
 
-// Render as HTML stars
-echo $rating->render('html');
-
-// Get as JSON
-echo $rating->render('json');
-
-// Get calculated values
-$average = $rating->getAverage(); // 3.67
-$total = $rating->getTotal();     // 150
+// Display 5-star rating
+echo $rating->render(); // Defaults to HTML stars
 ```
 
-## Customization
-
+### 📊 Output Formats
 ```php
-// With custom options
-$rating = new Rating($ratings, [
-    'type' => 'stars',
-    'color' => '#ff6b35',
-    'size' => '24px',
-    'show_total' => false,
-    'interactive' => true,
-    'show_summary' => false //requred
+// As interactive HTML stars
+echo $rating->render('html', [
+    'interactive' => true
 ]);
 
-// Change options later
-$rating->setOptions([
-    'color' => '#4285f4'
+// As JSON data
+$jsonOutput = $rating->render('json');
+// {
+//   "average": 3.67,
+//   "total": 150,
+//   "distribution": {
+//     "five_star": 33.33,
+//     "four_star": 26.67,
+//     ...
+//   }
+// }
+
+// As percentage bars
+echo $rating->render('html', [
+    'type' => 'bars',
+    'bar_height' => '25px'
 ]);
 ```
 
-## 🎨 Customization Options
-show_summary
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `type` | string (required)| `stars` | Output type (`stars`, `bars`) |
-| `color` | string (required)| `#ffc107` | Star color (gold by default) |
-| `size` | string (required)| `1em` | Display size |
-| `interactive` | bool (required)| `false` | Enable clickable ratings |
-| `show_summary` | bool (required)| `false` | Enable clickable ratings |
+### 🎨 Customization Options
+#### Star Display Options
+```php
+new Rating($ratings, [
+    'type' => 'stars',       // Display type
+    'color' => '#6a5acd',    // Star color
+    'size' => '1.5rem',      // Size
+    'show_average' => false, // Hide average
+    'show_total' => true     // Show count
+]);
+```
 
+#### Bar Display Options
+```php
+new Rating($ratings, [
+    'type' => 'bars',
+    'color' => '#4a90e2',          // Bar color
+    'bar_height' => '20px',        // Bar thickness
+    'bar_show_percentages' => true,// Show percentages
+    'show_summary' => true         // Show summary
+]);
+```
+
+### ⚙️ All Configuration Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `type` | string | Yes | `stars` | `stars` or `bars` |
+| `color` | string | Yes | `#ffc107` | Main color |
+| `size` | string | Yes | `1em` | Display size |
+| `show_average` | bool | No | `true` | Show average rating |
+| `show_total` | bool | No | `true` | Show total ratings |
+| `show_summary` | bool | Yes | `false` | Show summary text |
+| `interactive` | bool | Yes | `false` | Make ratings clickable |
+| `bar_height` | string | No | `20px` | Bar thickness |
+| `bar_spacing` | string | No | `8px` | Space between bars |
+| `bar_show_percentages` | bool | No | `true` | Show percentages |
+
+### 🔄 Updating Options
+```php
+$rating->setOptions([
+    'color' => '#e74c3c', // Change to red
+    'size' => '2rem',     // Larger size
+    'type' => 'bars'      // Switch to bars
+]);
+
+// Get current options
+$currentOptions = $rating->getOptions();
+```
+
+
+#### Laravel Blade
+```php
+@php
+    $rating = new \Emleons\SimRating\Rating($product->ratings, [
+        'interactive' => true,
+        'show_summary' => false
+    ]);
+@endphp
+
+{!! $rating->render() !!}
+```
+
+### 💡 Pro Tips
+1. Always include all 5 star rating keys
+2. Set `show_summary` based on your display needs
+3. Use `interactive` only when you need user ratings
+4. For bars, customize heights and spacing to match your design
+
+### 🚨 Common Errors
+```php
+// ❌ Missing required keys
+$invalidRatings = [
+    'one_star' => 10,
+    // Missing other star counts
+];
+
+// ❌ Invalid color format
+new Rating($ratings, ['color' => 'red']); // Use hex codes
+
+// ❌ Wrong option name
+new Rating($ratings, ['colour' => '#fff']); // Should be 'color'
+```
 
 ## Display Types
 
