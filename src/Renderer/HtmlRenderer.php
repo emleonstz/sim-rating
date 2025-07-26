@@ -197,51 +197,52 @@ class HtmlRenderer implements RendererInterface
         $html = '';
         $starLabels = [
             'five_star' => '5-star',
-            'four_star' => '4-star', 
+            'four_star' => '4-star',
             'three_star' => '3-star',
             'two_star' => '2-star',
             'one_star' => '1-star'
         ];
-        
+
         $showPercent = $options['bar_show_percentages'];
         $precision = $options['bar_percentage_precision'];
         $suffix = $options['bar_percentage_suffix'];
-        
+
         foreach ($starLabels as $key => $label) {
             $percentage = $distribution[$key] ?? 0;
             $count = $ratings[$key] ?? 0;
-            
-            $percentageText = $showPercent 
-                ? number_format($percentage, $precision) . $suffix
-                : '';
-            
+
+            $percentageText = number_format($percentage, $precision) . $suffix;
+
+            $percentDiv = $showPercent
+                ? "<div class=\"sim-rating-bar-percent\">{$percentageText}</div>"
+                : "";
+
             $html .= <<<HTML
-            <div class="sim-rating-bar">
-                <div class="sim-rating-bar-label">
-                    {$label}: {$count}
-                </div>
-                <div class="sim-rating-bar-bg">
-                    <div class="sim-rating-bar-fill" style="width: {$percentage}%"></div>
-                </div>
-                <div class="sim-rating-bar-percent">
-                    {$percentageText}
-                </div>
+        <div class="sim-rating-bar">
+            <div class="sim-rating-bar-label">
+                {$label}: {$count}
             </div>
-            HTML;
+            <div class="sim-rating-bar-bg">
+                <div class="sim-rating-bar-fill" style="width: {$percentage}%"></div>
+            </div>
+            {$percentDiv}
+        </div>
+        HTML;
         }
-        
+
         return $html;
     }
+
 
     protected function renderSummary(array $options): string
     {
         if (!$options['show_summary']) {
             return '';
         }
-        
+
         $average = $this->rating->getAverage();
         $total = $this->rating->getTotal();
-        
+
         return <<<HTML
         <div class="sim-rating-summary">
             Average: <strong>{$average}</strong> from <strong>{$total}</strong> total ratings
