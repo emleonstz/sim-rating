@@ -17,7 +17,6 @@ Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ra
 
 ```php
 // Default star output
-$rating->render('html');
 ```
 
 ### Custom Bar Rating  
