@@ -1,6 +1,6 @@
 # Sim-Rating - A Simple 5-Star Rating System for PHP
 
-[![Latest Version](https://img.shields.io/packagist/v/emleonstz/sim-rating.svg)](https://packagist.org/packages/emleonstz/sim-rating)
+[![Latest Version](https://img.shields.io/packagist/v/emleons/sim-rating.svg)](https://packagist.org/packages/emleons/sim-rating)
 [![Tests](https://github.com/emleonstz/sim-rating/actions/workflows/tests.yml/badge.svg)](https://github.com/emleonstz/sim-rating/actions/workflows/tests.yml)
 [![License](https://img.shields.io/github/license/emleonstz/sim-rating.svg)](https://github.com/emleonstz/sim-rating/blob/main/LICENSE)
 
