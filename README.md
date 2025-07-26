@@ -66,7 +66,8 @@ $rating = new Rating($ratings, [
     'color' => '#ff6b35',
     'size' => '24px',
     'show_total' => false,
-    'interactive' => true
+    'interactive' => true,
+    '' => false //requred
 ]);
 
 // Change options later
@@ -76,13 +77,14 @@ $rating->setOptions([
 ```
 
 ## 🎨 Customization Options
-
+show_summary
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `type` | string | `stars` | Output type (`stars`, `bars`) |
-| `color` | string | `#ffc107` | Star color (gold by default) |
-| `size` | string | `1em` | Display size |
-| `interactive` | bool | `false` | Enable clickable ratings |
+| `type` | string (required)| `stars` | Output type (`stars`, `bars`) |
+| `color` | string (required)| `#ffc107` | Star color (gold by default) |
+| `size` | string (required)| `1em` | Display size |
+| `interactive` | bool (required)| `false` | Enable clickable ratings |
+| `show_summary` | bool (required)| `false` | Enable clickable ratings |
 
 
 ## Display Types

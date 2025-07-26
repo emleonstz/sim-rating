@@ -143,6 +143,7 @@ SVG;
         include $templatePath;
         return ob_get_clean();
     }
+
     protected function renderBars(): string
     {
         $options = $this->rating->getOptions();
@@ -152,13 +153,16 @@ SVG;
         $css = $this->generateBarCSS($options);
         $bars = $this->generateBarHTML($distribution, $ratings, $options);
 
+        $showSummary = $options['show_summary'] ?? true;
+        $summaryHtml = $showSummary ? $this->renderSummary() : '';
+
         return <<<HTML
-        <div class="sim-rating-bars-container">
-            <style>{$css}</style>
-            {$bars}
-            {$this->renderSummary()}
-        </div>
-        HTML;
+    <div class="sim-rating-bars-container">
+        <style>{$css}</style>
+        {$bars}
+        {$summaryHtml}
+    </div>
+    HTML;
     }
 
     protected function generateBarCSS(array $options): string
@@ -250,7 +254,11 @@ SVG;
 
     protected function renderSummary(): string
     {
-        if (!$this->rating->getOptions()['show_summary']) {
+        $options = $this->rating->getOptions();
+
+        $showSummary = $options['show_summary'] ?? true;
+
+        if (!$showSummary) {
             return '';
         }
 
@@ -258,9 +266,9 @@ SVG;
         $total = $this->rating->getTotal();
 
         return <<<HTML
-        <div class="sim-rating-summary">
-            Average: <strong>{$average}</strong> from <strong>{$total}</strong> total ratings
-        </div>
-        HTML;
+    <div class="sim-rating-summary">
+        Average: <strong>{$average}</strong> from <strong>{$total}</strong> total ratings
+    </div>
+    HTML;
     }
 }
