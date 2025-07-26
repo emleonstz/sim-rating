@@ -10,7 +10,6 @@
 
 Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ratings. It supports multiple display formats (stars, bars, JSON) and is highly customizable and works with any php frame work.
 
-![Banner](https://via.placeholder.com/1500x500/0d1117/ffffff?text=sim-rating:+PHP+5★+Rating+System)
 
 ## Features
 
