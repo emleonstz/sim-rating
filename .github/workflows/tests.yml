@@ -2,7 +2,7 @@ name: Tests
 
 on: [push, pull_request]
 
-# Add permissions at workflow level
+# Add permissions
 permissions:
   contents: read
   actions: read
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ['8.2']  # Add more PHP versions if needed
+        php: ['8.2']
 
     steps:
       - uses: actions/checkout@v4
