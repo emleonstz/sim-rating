@@ -1,8 +1,6 @@
 # Security
 
-Rating widgets sit on public pages and often display data that came from
-visitors. sim-rating treats every value as untrusted until it has been
-checked. This page describes the model so you can review it with confidence.
+Rating widgets sit on public pages and often display data. Always validate input using appropriate filters and escape output before rendering it on a page. Never allow unchecked user input to reach the browser.
 
 ## What is escaped
 
