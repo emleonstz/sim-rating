@@ -25,7 +25,7 @@
         "source": "https://github.com/emleonstz/sim-rating"
     },
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.3"
     },
     "require-dev": {
         "laravel/pint": "^1.18",

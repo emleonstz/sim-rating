@@ -58,11 +58,11 @@ internal improvements plus a small set of behaviour fixes.
 - `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`.
 
 ### Changed
-- `composer.json`: requires `php >=8.2`, adds `autoload-dev`, `scripts`,
+- `composer.json`: requires `php >=8.3`, adds `autoload-dev`, `scripts`,
   `config` and `support`; fixes the author email typo; pins stable dev deps.
 - Options are now defined once in `Rating::getDefaultOptions()` (renderers no
   longer redeclare them), preventing configuration drift.
-- GitHub Actions now runs the test suite on PHP 8.2/8.3/8.4 with `pcov`
+- GitHub Actions now runs the test suite on PHP 8.3/8.4 with `pcov`
   coverage, plus a dedicated static-analysis job (Pint + PHPStan).
 - `phpunit.xml` uses the modern `<source>` element (removes the deprecation
   warning) and fails on PHPUnit deprecations.

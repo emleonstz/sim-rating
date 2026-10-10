@@ -6,7 +6,10 @@
 
 [![Latest Version](https://img.shields.io/packagist/v/emleons/sim-rating.svg)](https://packagist.org/packages/emleons/sim-rating)
 [![Tests](https://github.com/emleonstz/sim-rating/actions/workflows/tests.yml/badge.svg?event=push)](https://github.com/emleonstz/sim-rating/actions/workflows/tests.yml)
+[![Docs](https://github.com/emleonstz/sim-rating/actions/workflows/docs.yml/badge.svg)](https://emleonstz.github.io/sim-rating/)
 [![License](https://img.shields.io/github/license/emleonstz/sim-rating.svg)](https://github.com/emleonstz/sim-rating/blob/main/LICENSE)
+
+📖 **Documentation:** <https://emleonstz.github.io/sim-rating/>
 
 Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ratings. It supports multiple display formats (stars, bars, JSON) and is highly customizable and works with any php frame work.
 
@@ -36,6 +39,8 @@ Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ra
 - ✅ Fully unit tested, statically analysed (PHPStan level 8) & style-checked (Pint)
 
 ## Installation
+
+**Requirements:** PHP **8.3+**.
 
 Install via Composer:
 
@@ -381,6 +386,20 @@ public function showProduct($productId)
     <small>{{ number_format($rating->getAverage(), 1) }} average ({{ $rating->getTotal() }} ratings)</small>
 </div>
 ```
+
+## Documentation
+
+Full guides live at **<https://emleonstz.github.io/sim-rating/>**.
+
+Preview locally:
+
+```bash
+pip install -r requirements-docs.txt
+mkdocs serve
+```
+
+Deploys automatically to GitHub Pages via [Docs workflow](.github/workflows/docs.yml)
+on pushes to `main` touching `docs/**`, `mkdocs.yml`, or `requirements-docs.txt`.
 
 ## Testing
 

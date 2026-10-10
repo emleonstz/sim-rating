@@ -1,0 +1,55 @@
+site_name: sim-rating
+site_description: A secure, framework agnostic 5 star rating rendering library for PHP.
+site_author: emleonstz
+repo_url: https://github.com/emleonstz/sim-rating
+repo_name: emleonstz/sim-rating
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: amber
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.top
+    - navigation.sections
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+  - Guide:
+      - Display types: guide/display-types.md
+      - Styling: guide/styling.md
+      - Options reference: guide/options.md
+  - About:
+      - Security: about/security.md
+      - Contributing: about/contributing.md
+      - Changelog: about/changelog.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+
+plugins:
+  - search
