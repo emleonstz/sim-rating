@@ -1,0 +1,23 @@
+# Dependencies
+/vendor/
+
+# PHPUnit
+/.phpunit.cache/
+/.phpunit.result.cache
+/phpunit.xml.bak
+
+# Build & coverage artifacts
+/build/
+/coverage/
+*.cache
+
+# Static analysis / editor
+/.phpstan.cache/
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

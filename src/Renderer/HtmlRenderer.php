@@ -1,252 +1,260 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emleons\SimRating\Renderer;
 
-use Emleons\SimRating\Rating;
 use Emleons\SimRating\Interfaces\RendererInterface;
+use Emleons\SimRating\Rating;
+use Emleons\SimRating\Renderer\Concerns\InstanceAware;
+use Emleons\SimRating\Security\Escaper;
 
 class HtmlRenderer implements RendererInterface
 {
+    use InstanceAware;
+
     protected Rating $rating;
-    protected array $defaultOptions = [
-        'type' => 'stars',
-        'color' => '#ffc107',
-        'size' => '1em',
-        'show_total' => true,
-        'show_average' => true,
-        'show_summary' => true,
-        'interactive' => false,
-        'readonly' => true,
-        // Bar-specific options
-        'bar_height' => '20px',
-        'bar_spacing' => '8px',
-        'bar_border_radius' => '4px',
-        'bar_show_counts' => true,
-        'bar_show_percentages' => true,
-        'bar_percentage_precision' => 1,
-        'bar_percentage_suffix' => '%',
-        'bar_animate' => true
-    ];
+
+    /**
+     * A unique prefix for this renderer instance so that multiple ratings on a
+     * single page never generate colliding SVG gradient IDs.
+     */
+    protected string $uid;
 
     public function __construct(Rating $rating)
     {
         $this->rating = $rating;
+        $this->uid = 'simrating'.bin2hex(random_bytes(4));
     }
 
     public function render(): string
     {
-        $options = array_merge($this->defaultOptions, $this->rating->getOptions());
+        $options = $this->rating->getOptions();
 
-        return match ($options['type']) {
-            'bars' => $this->renderBars($options),
-            default => $this->renderDefault($options)
-        };
+        return $options['type'] === 'bars'
+            ? $this->renderBars($options)
+            : $this->renderDefault($options);
     }
 
+    /**
+     * @param  array<string,  mixed>  $options
+     */
     protected function renderDefault(array $options): string
     {
         $average = $this->rating->getAverage();
         $total = $this->rating->getTotal();
+        $averageText = number_format($average, 1);
+        $ariaLabel = sprintf('Rated %s out of 5 from %d ratings', $averageText, $total);
 
-        ob_start();
-?>
-        <div class="sim-rating" data-rating-average="<?= htmlspecialchars($average, ENT_QUOTES) ?>">
-            <?= $this->renderStars($average, $options) ?>
-            <?php if ($options['show_average']): ?>
-                <span class="sim-rating-average"><?= htmlspecialchars(number_format($average, 1), ENT_QUOTES) ?></span>
-            <?php endif; ?>
-            <?php if ($options['show_total']): ?>
-                <span class="sim-rating-total">(<?= htmlspecialchars($total, ENT_QUOTES) ?> ratings)</span>
-            <?php endif; ?>
-        </div>
-        <?php if ($options['interactive']): ?>
-            <script>
-                // Interactive JS would go here
-            </script>
-<?php endif;
+        $html = '<div '.$this->classes('em-sim-rating', 'em-sim-rating--'.$this->instanceSlug($options), 'sim-rating')
+            .' data-rating-average="'.Escaper::attr((string) $average).'"'
+            .' data-sim-rating-id="'.Escaper::attr($this->instanceId($options)).'"'
+            .' role="img" aria-label="'.Escaper::attr($ariaLabel).'">';
 
-        return ob_get_clean();
-    }
+        $html .= '<div '.$this->classes('em-sim-rating__stars').'>';
+        $html .= $this->renderStars($average, $options);
+        $html .= '</div>';
 
-    protected function renderStars(float $average, array $options): string
-    {
-        $fullStars = floor($average);
-        $hasHalfStar = ($average - $fullStars) >= 0.5;
-        $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
-        $output = '';
-
-        // Full stars
-        for ($i = 0; $i < $fullStars; $i++) {
-            $output .= $this->renderStar('full', $i + 1, $options);
+        if ($options['show_average']) {
+            $html .= '<span '.$this->classes('em-sim-rating__average', 'sim-rating-average').'>'
+                .Escaper::attr($averageText).'</span>';
         }
 
-        // Half star
-        if ($hasHalfStar) {
-            $output .= $this->renderStar('half', $fullStars + 1, $options);
+        if ($options['show_total']) {
+            $html .= '<span '.$this->classes('em-sim-rating__total', 'sim-rating-total').'>('
+                .Escaper::attr((string) $total).' ratings)</span>';
         }
 
-        // Empty stars
-        for ($i = 0; $i < $emptyStars; $i++) {
-            $output .= $this->renderStar('empty', $fullStars + $hasHalfStar + $i + 1, $options);
-        }
+        $html .= '</div>';
 
-        return $output;
-    }
-
-    protected function renderStar(string $type, int $position, array $options): string
-    {
-        $color = $type === 'empty' ? '#ddd' : $options['color'];
-        $size = $options['size'];
-        $percentage = $type === 'half' ? '50%' : '100%';
-
-        return <<<SVG
-        <svg width="$size" height="$size" viewBox="0 0 24 24" data-rating-value="$position">
-            <defs>
-                <linearGradient id="grad$position">
-                    <stop offset="$percentage" stop-color="$color"/>
-                    <stop offset="$percentage" stop-color="transparent"/>
-                </linearGradient>
-            </defs>
-            <path 
-                fill="url(#grad$position)" 
-                stroke="$color" 
-                stroke-width="1"
-                d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-            />
-        </svg>
-        SVG;
-    }
-
-    protected function renderBars(array $options): string
-    {
-        $distribution = $this->rating->getDistribution();
-        $ratings = $this->rating->getRatings();
-
-        $css = $this->generateBarCSS($options);
-        $bars = $this->generateBarHTML($distribution, $ratings, $options);
-        $summary = $this->renderSummary($options);
-
-        return <<<HTML
-        <div class="sim-rating-bars-container">
-            <style>{$css}</style>
-            {$bars}
-            {$summary}
-        </div>
-        HTML;
-    }
-
-    protected function generateBarCSS(array $options): string
-    {
-        $color = $options['color'];
-        $height = $options['bar_height'];
-        $spacing = $options['bar_spacing'];
-        $borderRadius = $options['bar_border_radius'];
-
-        return <<<CSS
-        .sim-rating-bars-container {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .sim-rating-bar {
-            display: flex;
-            align-items: center;
-            margin-bottom: {$spacing};
-        }
-        .sim-rating-bar-label {
-            width: 80px;
-            font-size: 0.9em;
-            color: #555;
-        }
-        .sim-rating-bar-bg {
-            flex-grow: 1;
-            background: #f5f5f5;
-            border-radius: {$borderRadius};
-            height: {$height};
-            overflow: hidden;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .sim-rating-bar-fill {
-            height: 100%;
-            background: {$color};
-            border-radius: {$borderRadius};
-            transition: width 0.6s ease-out;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .sim-rating-bar-percent {
-            width: 50px;
-            text-align: right;
-            font-size: 0.85em;
-            color: #666;
-            margin-left: 10px;
-        }
-        .sim-rating-bar-percent:empty {
-            display: none;
-        }
-        .sim-rating-summary {
-            margin-top: 15px;
-            font-size: 0.95em;
-            color: #444;
-        }
-        CSS;
-    }
-
-    protected function generateBarHTML(array $distribution, array $ratings, array $options): string
-    {
-        $html = '';
-        $starLabels = [
-            'five_star' => '5-star',
-            'four_star' => '4-star',
-            'three_star' => '3-star',
-            'two_star' => '2-star',
-            'one_star' => '1-star'
-        ];
-
-        $showPercent = $options['bar_show_percentages'];
-        $precision = $options['bar_percentage_precision'];
-        $suffix = $options['bar_percentage_suffix'];
-
-        foreach ($starLabels as $key => $label) {
-            $percentage = $distribution[$key] ?? 0;
-            $count = $ratings[$key] ?? 0;
-
-            $percentageText = number_format($percentage, $precision) . $suffix;
-
-            $percentDiv = $showPercent
-                ? "<div class=\"sim-rating-bar-percent\">{$percentageText}</div>"
-                : "";
-
-            $html .= <<<HTML
-        <div class="sim-rating-bar">
-            <div class="sim-rating-bar-label">
-                {$label}: {$count}
-            </div>
-            <div class="sim-rating-bar-bg">
-                <div class="sim-rating-bar-fill" style="width: {$percentage}%"></div>
-            </div>
-            {$percentDiv}
-        </div>
-        HTML;
+        if ($options['interactive'] && ! $options['readonly']) {
+            $html .= $this->renderInteractiveScript();
         }
 
         return $html;
     }
 
+    /**
+     * Render the five stars, filling each proportionally to the average.
+     *
+     * @param  array<string,  mixed>  $options
+     */
+    protected function renderStars(float $average, array $options): string
+    {
+        $color = Escaper::color($options['color']);
+        $emptyColor = Escaper::color($options['empty_color'] ?? '#ddd');
+        $size = Escaper::length($options['size']);
 
+        $clamped = max(0.0, min(5.0, $average));
+        $output = '';
+
+        for ($position = 1; $position <= 5; $position++) {
+            $fill = max(0.0, min(1.0, $clamped - ($position - 1)));
+            $output .= $this->renderStar($position, $fill, $color, $emptyColor, $size);
+        }
+
+        return $output;
+    }
+
+    /**
+     * Render a single star with a proportional gradient fill.
+     *
+     * @param  float  $fill  Fraction of the star to fill, between 0.0 and 1.0.
+     */
+    protected function renderStar(int $position, float $fill, string $color, string $emptyColor, string $size): string
+    {
+        $path = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z';
+        $value = Escaper::attr((string) $position);
+        $starClass = $this->classes('em-sim-rating__star', 'sim-rating-star');
+
+        if ($fill <= 0.0) {
+            // Empty star: no gradient required.
+            return '<svg '.$starClass.' width="'.$size.'" height="'.$size
+                .'" viewBox="0 0 24 24" data-rating-value="'.$value.'" aria-hidden="true">'
+                .'<path fill="'.$emptyColor.'" d="'.$path.'"/></svg>';
+        }
+
+        $gradientId = $this->uid.'-grad'.$position;
+        $offset = $fill >= 1.0 ? '100%' : round($fill * 100).'%';
+
+        return '<svg '.$starClass.' width="'.$size.'" height="'.$size
+            .'" viewBox="0 0 24 24" data-rating-value="'.$value.'" aria-hidden="true">'
+            .'<defs><linearGradient id="'.$gradientId.'">'
+            .'<stop offset="'.$offset.'" stop-color="'.$color.'"/>'
+            .'<stop offset="'.$offset.'" stop-color="transparent"/>'
+            .'</linearGradient></defs>'
+            .'<path fill="url(#'.$gradientId.')" stroke="'.$color.'" stroke-width="1" d="'.$path.'"/>'
+            .'</svg>';
+    }
+
+    /**
+     * A tiny, dependency-free progressive-enhancement script that emits a
+     * "sim-rating:change" event carrying the selected star value. No eval,
+     * no network, no user data interpolated into the script body.
+     */
+    protected function renderInteractiveScript(): string
+    {
+        return '<script>(function(){'
+            .'var root=document.currentScript&&document.currentScript.previousElementSibling;'
+            .'if(!root)return;'
+            .'root.addEventListener("click",function(ev){'
+            .'var star=ev.target.closest("[data-rating-value]");'
+            .'if(!star)return;'
+            .'root.dispatchEvent(new CustomEvent("sim-rating:change",{bubbles:true,'
+            .'detail:{value:parseInt(star.getAttribute("data-rating-value"),10)}}));'
+            .'});'
+            .'})();</script>';
+    }
+
+    /**
+     * @param  array<string,  mixed>  $options
+     */
+    protected function renderBars(array $options): string
+    {
+        $distribution = $this->rating->getDistribution();
+        $ratings = $this->rating->getRatings();
+
+        $bars = $this->generateBarHTML($distribution, $ratings, $options);
+        $summary = $this->renderSummary($options);
+
+        $style = ! empty($options['inline_styles'])
+            ? '<style>'.$this->generateBarCSS($options).'</style>'
+            : '';
+
+        return '<div '.$this->classes(
+            'em-sim-rating',
+            'em-sim-rating__bars',
+            'em-sim-rating--'.$this->instanceSlug($options),
+            'sim-rating-bars-container'
+        ).' data-sim-rating-id="'.Escaper::attr($this->instanceId($options)).'">'
+            .$style
+            .$bars
+            .$summary
+            .'</div>';
+    }
+
+    /**
+     * @param  array<string,  mixed>  $options
+     */
+    protected function generateBarCSS(array $options): string
+    {
+        $color = Escaper::color($options['color']);
+        $height = Escaper::length($options['bar_height'], '20px');
+        $spacing = Escaper::length($options['bar_spacing'], '8px');
+        $borderRadius = Escaper::length($options['bar_border_radius'], '4px');
+
+        $scope = '.em-sim-rating--'.$this->instanceSlug($options);
+
+        $css = <<<CSS
+            {$scope}{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;width:100%;max-width:600px;margin:0 auto;}
+            {$scope} .em-sim-rating__bar{display:flex;align-items:center;margin-bottom:{$spacing};}
+            {$scope} .em-sim-rating__bar-label{width:80px;font-size:0.9em;color:#555;}
+            {$scope} .em-sim-rating__bar-track{flex-grow:1;background:#f5f5f5;border-radius:{$borderRadius};height:{$height};overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,0.1);}
+            {$scope} .em-sim-rating__bar-fill{height:100%;background:{$color};border-radius:{$borderRadius};transition:width 0.6s ease-out;box-shadow:0 1px 2px rgba(0,0,0,0.1);}
+            {$scope} .em-sim-rating__bar-percent{width:50px;text-align:right;font-size:0.85em;color:#666;margin-left:10px;}
+            {$scope} .em-sim-rating__bar-percent:empty{display:none;}
+            {$scope} .em-sim-rating__summary{margin-top:15px;font-size:0.95em;color:#444;}
+            CSS;
+
+        return Escaper::css($css);
+    }
+
+    /**
+     * @param  array<string,  float>  $distribution
+     * @param  array<string,  int>  $ratings
+     * @param  array<string,  mixed>  $options
+     */
+    protected function generateBarHTML(array $distribution, array $ratings, array $options): string
+    {
+        $labels = [
+            'five_star' => '5-star',
+            'four_star' => '4-star',
+            'three_star' => '3-star',
+            'two_star' => '2-star',
+            'one_star' => '1-star',
+        ];
+
+        $showPercent = (bool) $options['bar_show_percentages'];
+        $precision = (int) $options['bar_percentage_precision'];
+        $suffix = Escaper::attr((string) $options['bar_percentage_suffix']);
+
+        $html = '';
+        foreach ($labels as $key => $label) {
+            $percentage = isset($distribution[$key]) ? round((float) $distribution[$key], $precision) : 0.0;
+            $count = isset($ratings[$key]) ? (int) $ratings[$key] : 0;
+            $percentageText = number_format($percentage, $precision).$suffix;
+
+            $percentDiv = $showPercent
+                ? '<div '.$this->classes('em-sim-rating__bar-percent', 'sim-rating-bar-percent').'>'
+                    .Escaper::attr($percentageText).'</div>'
+                : '';
+
+            $html .= '<div '.$this->classes('em-sim-rating__bar', 'sim-rating-bar').'>'
+                .'<div '.$this->classes('em-sim-rating__bar-label', 'sim-rating-bar-label').'>'
+                    .Escaper::attr($label).': '.Escaper::attr((string) $count).'</div>'
+                .'<div '.$this->classes('em-sim-rating__bar-track', 'sim-rating-bar-bg').'>'
+                    .'<div '.$this->classes('em-sim-rating__bar-fill', 'sim-rating-bar-fill')
+                    .' style="width:'.Escaper::attr((string) $percentage).'%"></div></div>'
+                .$percentDiv
+                .'</div>';
+        }
+
+        return $html;
+    }
+
+    /**
+     * @param  array<string,  mixed>  $options
+     */
     protected function renderSummary(array $options): string
     {
-        if (!$options['show_summary']) {
+        if (empty($options['show_summary'])) {
             return '';
         }
 
-        $average = $this->rating->getAverage();
-        $total = $this->rating->getTotal();
+        $average = number_format($this->rating->getAverage(), 2);
+        $total = (string) $this->rating->getTotal();
 
-        return <<<HTML
-        <div class="sim-rating-summary">
-            Average: <strong>{$average}</strong> from <strong>{$total}</strong> total ratings
-        </div>
-        HTML;
+        return '<div '.$this->classes('em-sim-rating__summary', 'sim-rating-summary').'>Average: <strong>'
+            .Escaper::attr($average).'</strong> from <strong>'.Escaper::attr($total).'</strong> total ratings</div>';
     }
 }

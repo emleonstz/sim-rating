@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="tests/bootstrap.php"
          colors="true"
-         verbose="true">
+         cacheDirectory=".phpunit.cache"
+         failOnPhpunitDeprecation="true"
+         failOnEmptyTestSuite="true">
     <testsuites>
         <testsuite name="sim-rating Test Suite">
-            <directory>tests</directory>
+            <directory suffix="Test.php">tests</directory>
         </testsuite>
     </testsuites>
 
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
+    <source>
+        <include>
             <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
-
-    <logging>
-        <log type="coverage-clover" target="build/logs/clover.xml"/>
-    </logging>
+        </include>
+    </source>
 </phpunit>
+

@@ -25,12 +25,15 @@ Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ra
 
 ## Features
 
-- 🎯 Works with PHP Framework and PHP plain implementation
-- ⭐ Multiple output formats (HTML, JSON, SVG)
-- 🎨 Customizable colors, sizes and styles
+- 🎯 Works in any Framework: works with Laravel, Symfony, CodeIgniter, or plain PHP
+- ⭐ Multiple output formats (HTML stars, HTML bars, standalone SVG, JSON)
+- 🎨 Customizable colors, sizes and styles (validated & escaped)
 - 📊 Calculate averages, totals and distributions
+- 🔒 Secure by default — all rendered values are escaped (XSS-safe)
+- 🧪 Type-safe API with backed enums (`StarKey`, `DisplayType`)
+- ♿ Accessible markup (`role="img"`, `aria-label`)
 - 📱 Responsive and mobile-friendly
-- ✅ 100% unit tested
+- ✅ Fully unit tested, statically analysed (PHPStan level 8) & style-checked (Pint)
 
 ## Installation
 
@@ -45,13 +48,13 @@ composer require emleons/sim-rating
 require('vendor/autoload.php');
 use Emleons\SimRating\Rating;
 
-// Initialize with rating counts (all keys required)
+// Initialize with rating counts (all five keys recommended; missing keys default to 0)
 $ratings = [
-    'one_star' => 10,    // Required
-    'two_star' => 20,    // Required
-    'three_star' => 30,  // Required
-    'four_star' => 40,   // Required
-    'five_star' => 50    // Required
+    'one_star' => 10,
+    'two_star' => 20,
+    'three_star' => 30,
+    'four_star' => 40,
+    'five_star' => 50
 ];
 
 $rating = new Rating($ratings);
@@ -150,25 +153,120 @@ $currentOptions = $rating->getOptions();
 ```
 
 ### 💡 Important Tips
-1. Always include all 5 star rating keys
+1. Rating keys are optional by default missing buckets count as `0`. Enable the `strict` option if you want to require all five.
 2. Set `show_summary` based on your display needs
 3. Use `interactive` only when you need user ratings
 4. For bars, customize heights and spacing to match your design
+5. All `color`/`size` values are validated and escaped automatically — invalid values safely fall back to defaults.
+
+### 🔒 Security
+sim-rating escapes **every** value that ends up in the rendered markup, so it is safe to render data that originates from user input. Colour and size options are validated against strict allow-lists and fall back to safe defaults if they do not match.
+
+```php
+// Malicious option values are neutralised, never emitted verbatim.
+$rating = new Rating(['five_star' => 1], [
+    'color' => '"><script>alert(1)</script>', // falls back to #ffc107
+]);
+
+echo $rating->render(); // safe HTML
+```
 
 ### 🚨 Common Errors
 ```php
-// ❌ Missing required keys
-$invalidRatings = [
-    'one_star' => 10,
-    // Missing other star counts
-];
+// ⚠️ Partial ratings are allowed by default (missing buckets = 0).
+//    Enable 'strict' to require all five keys:
+new Rating(['one_star' => 10], ['strict' => true]); // throws: Missing required rating key
 
-// ❌ Invalid color format
-new Rating($ratings, ['color' => 'red']); // Use hex codes
+// ⚠️ Unknown rating keys always throw
+new Rating(['six_star' => 5]); // throws: Invalid rating key: six_star
 
-// ❌ Wrong option name
+// ⚠️ Invalid colour values are safely rejected and fall back to the default
+new Rating($ratings, ['color' => 'red; } body { display:none']); // uses #ffc107
+
+// ❌ Wrong option name (silently ignored)
 new Rating($ratings, ['colour' => '#fff']); // Should be 'color'
 ```
+
+## 🎨 Styling
+
+Every rendered element carries a stable, namespaced **BEM class** so you can
+style it from your own CSS file. This is the recommended way to customize the
+look it needs no raw-CSS option and carries **no injection risk**. The legacy
+`sim-rating*` classes are still present (deprecated) for backward compatibility.
+
+### Class map
+
+| Element | BEM class | Legacy class (deprecated) |
+|---------|-----------|---------------------------|
+| Root (every widget) | `em-sim-rating` | `sim-rating` |
+| Stars wrapper | `em-sim-rating__stars` | — |
+| Each star | `em-sim-rating__star` | `sim-rating-star` |
+| Average | `em-sim-rating__average` | `sim-rating-average` |
+| Total | `em-sim-rating__total` | `sim-rating-total` |
+| Bars root | `em-sim-rating__bars` | `sim-rating-bars-container` |
+| A bar row | `em-sim-rating__bar` | `sim-rating-bar` |
+| Bar label | `em-sim-rating__bar-label` | `sim-rating-bar-label` |
+| Bar track | `em-sim-rating__bar-track` | `sim-rating-bar-bg` |
+| Bar fill | `em-sim-rating__bar-fill` | `sim-rating-bar-fill` |
+| Bar percent | `em-sim-rating__bar-percent` | `sim-rating-bar-percent` |
+| Summary | `em-sim-rating__summary` | `sim-rating-summary` |
+| SVG root | `em-sim-rating__svg` | `sim-rating-svg` |
+
+### Option 1 — include the canonical stylesheet
+
+Add the shipped stylesheet **once** in your layout, then render with inline
+styles disabled:
+
+```php
+// Render without the per-instance <style> block.
+echo (new Rating($data, ['type' => 'bars', 'inline_styles' => false]))->render();
+```
+
+```html
+<link rel="stylesheet" href="/vendor/emleons/sim-rating/dist/sim-rating.css">
+```
+
+Theme it with CSS custom properties on `.em-sim-rating`:
+
+```css
+.em-sim-rating {
+    --em-sim-rating-color: #e74c3c;
+    --em-sim-rating-empty-color: #eee;
+    --em-sim-rating-size: 1.5rem;
+    --em-sim-rating-bar-height: 24px;
+    --em-sim-rating-bar-radius: 999px;
+}
+```
+
+…or write full rules against the BEM classes:
+
+```css
+.em-sim-rating__bar-fill { background: linear-gradient(90deg, #f39c12, #e74c3c); }
+.em-sim-rating__star { transition: transform .15s; }
+.em-sim-rating__star:hover { transform: scale(1.1); }
+```
+
+### Option 2 — target a single widget (uniqueness)
+
+Give a widget a stable `instance_id`; it becomes a `data-sim-rating-id`
+attribute and an `em-sim-rating--{id}` scope class:
+
+```php
+echo (new Rating($data, ['instance_id' => 'product-42', 'inline_styles' => false]))->render();
+```
+
+```css
+.em-sim-rating[data-sim-rating-id="product-42"] { --em-sim-rating-color: #2ecc71; }
+/* or */
+.em-sim-rating--product-42 .em-sim-rating__bar-fill { background: #2ecc71; }
+```
+
+Each widget's default inline CSS is scoped to its own id, so multiple widgets on
+one page never clash.
+
+> **Note:** there is intentionally **no raw `custom_css` option**. Passing raw
+> CSS through a value would re-introduce an injection vector. Style via the BEM
+> classes / custom properties above instead.
 
 ## Display Types
 
@@ -180,6 +278,11 @@ echo $rating->render('html'); // Default star display
 ### Bars
 ```php
 echo $rating->render('html', ['type' => 'bars']);
+```
+
+### SVG
+```php
+echo $rating->render('svg'); // A standalone <svg> element
 ```
 
 ### JSON Output
@@ -198,12 +301,23 @@ echo $rating->render('json');
 
 ## Advanced Usage
 
-### Custom Templates
+### Type-safe display types
 ```php
-// Create custom template at path/to/template.php
-echo $rating->render('html', [
-    'template' => 'path/to/template.php'
-]);
+use Emleons\SimRating\Enum\DisplayType;
+
+echo $rating->render(DisplayType::Json);
+```
+
+### Per-render options (without mutating the instance)
+```php
+// A one-off colour change that does not affect future renders.
+echo $rating->render('html', ['color' => '#e74c3c']);
+```
+
+### Strict validation
+```php
+// Throw unless all five buckets are provided.
+$rating = new Rating($data, ['strict' => true]);
 ```
 
 ### Using in Frameworks
@@ -214,7 +328,7 @@ echo $rating->render('html', [
 public function show(Product $product)
 {
     return view('products.show', [
-        'rating' => new \SimRating\Rating($product->ratings)
+        'rating' => new \Emleons\SimRating\Rating($product->ratings)
     ]);
 }
 
@@ -228,7 +342,7 @@ public function show(Product $product)
 public function show(Product $product): Response
 {
     return $this->render('product/show.html.twig', [
-        'rating' => new \SimRating\Rating($product->getRatings())
+        'rating' => new \Emleons\SimRating\Rating($product->getRatings())
     ]);
 }
 
@@ -270,15 +384,30 @@ public function showProduct($productId)
 
 ## Testing
 
-Run the test suite:
+Run the full quality gate (code style + static analysis + tests):
 
 ```bash
-./vendor/bin/phpunit
+composer check
+```
+
+Or run the pieces individually:
+
+```bash
+composer test          # PHPUnit
+composer test:coverage # PHPUnit with a coverage report (needs pcov/xdebug)
+composer lint          # Laravel Pint (dry-run)
+composer analyse       # PHPStan (level 8)
 ```
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for
+the local setup and quality bar, and [SECURITY.md](SECURITY.md) for how to
+report security vulnerabilities.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a history of notable changes.
 
 ## License
 

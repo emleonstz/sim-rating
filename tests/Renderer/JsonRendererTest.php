@@ -1,42 +1,41 @@
 <?php
 
-namespace SimRating\Tests\Renderer;
+declare(strict_types=1);
 
-use Emleons\SimRating\Rating as SimRatingRating;
-use Emleons\SimRating\Renderer\JsonRenderer as RendererJsonRenderer;
+namespace Emleons\SimRating\Tests\Renderer;
+
+use Emleons\SimRating\Rating;
+use Emleons\SimRating\Renderer\JsonRenderer;
 use PHPUnit\Framework\TestCase;
-use SimRating\Rating;
-use SimRating\Renderer\JsonRenderer;
 
 class JsonRendererTest extends TestCase
 {
-    public function testRender()
+    public function test_render(): void
     {
-        $rating = new SimRatingRating([
+        $rating = new Rating([
             'one_star' => 1,
             'two_star' => 2,
             'three_star' => 3,
             'four_star' => 4,
-            'five_star' => 5
+            'five_star' => 5,
         ]);
 
-        $renderer = new RendererJsonRenderer($rating);
+        $renderer = new JsonRenderer($rating);
         $output = $renderer->render();
         $data = json_decode($output, true);
 
-        $this->assertEquals(3.67, $data['average']);
-        $this->assertEquals(15, $data['total']);
+        $this->assertSame(3.67, $data['average']);
+        $this->assertSame(15, $data['total']);
         $this->assertArrayHasKey('one_star', $data['distribution']);
     }
 
-    public function testRenderWithEmptyRatings()
+    public function test_render_with_empty_ratings(): void
     {
-        $rating = new SimRatingRating([]);
-        $renderer = new RendererJsonRenderer($rating);
-        $output = $renderer->render();
-        $data = json_decode($output, true);
+        $rating = new Rating([]);
+        $renderer = new JsonRenderer($rating);
+        $data = json_decode($renderer->render(), true);
 
-        $this->assertEquals(0, $data['average']);
-        $this->assertEquals(0, $data['total']);
+        $this->assertSame(0.0, $data['average']);
+        $this->assertSame(0, $data['total']);
     }
 }

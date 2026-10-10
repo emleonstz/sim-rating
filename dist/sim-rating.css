@@ -1,0 +1,111 @@
+/*!
+ * sim-rating — canonical stylesheet
+ *
+ * Include this file ONCE in your page, then render widgets with
+ * `'inline_styles' => false` to avoid per-instance <style> blocks.
+ *
+ * Re-theme a single widget by overriding the custom properties on its
+ * `.em-sim-rating` element (or a `[data-sim-rating-id]` scope), or target the
+ * BEM element classes directly from your own CSS.
+ *
+ *   .em-sim-rating[data-sim-rating-id="product-42"] { --em-sim-rating-color: #e74c3c; }
+ */
+
+.em-sim-rating {
+    /* Theming API (custom properties) */
+    --em-sim-rating-color: #ffc107;
+    --em-sim-rating-empty-color: #ddd;
+    --em-sim-rating-size: 1em;
+    --em-sim-rating-gap: 2px;
+    --em-sim-rating-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Bars */
+    --em-sim-rating-bar-height: 20px;
+    --em-sim-rating-bar-spacing: 8px;
+    --em-sim-rating-bar-radius: 4px;
+    --em-sim-rating-bar-track: #f5f5f5;
+
+    font-family: var(--em-sim-rating-font);
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ---- Stars ---- */
+.em-sim-rating__stars {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--em-sim-rating-gap);
+    line-height: 1;
+}
+
+.em-sim-rating__star {
+    width: var(--em-sim-rating-size);
+    height: var(--em-sim-rating-size);
+    display: block;
+}
+
+.em-sim-rating__average,
+.em-sim-rating__total {
+    font-size: 0.9em;
+    color: #555;
+}
+
+.em-sim-rating__total {
+    margin-left: 6px;
+    color: #888;
+}
+
+/* ---- Bars ---- */
+.em-sim-rating__bars {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.em-sim-rating__bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--em-sim-rating-bar-spacing);
+}
+
+.em-sim-rating__bar-label {
+    width: 80px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.em-sim-rating__bar-track {
+    flex-grow: 1;
+    background: var(--em-sim-rating-bar-track);
+    border-radius: var(--em-sim-rating-bar-radius);
+    height: var(--em-sim-rating-bar-height);
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.em-sim-rating__bar-fill {
+    height: 100%;
+    background: var(--em-sim-rating-color);
+    border-radius: var(--em-sim-rating-bar-radius);
+    transition: width 0.6s ease-out;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.em-sim-rating__bar-percent {
+    width: 50px;
+    text-align: right;
+    font-size: 0.85em;
+    color: #666;
+    margin-left: 10px;
+}
+
+.em-sim-rating__bar-percent:empty {
+    display: none;
+}
+
+.em-sim-rating__summary {
+    margin-top: 15px;
+    font-size: 0.95em;
+    color: #444;
+}

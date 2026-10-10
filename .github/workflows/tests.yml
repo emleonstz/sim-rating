@@ -1,22 +1,26 @@
-name: Tests
+name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 
-# Add permissions
 permissions:
   contents: read
-  actions: read
-  checks: write
-  pull-requests: write
-  statuses: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  tests:
+  phpunit:
     name: PHP ${{ matrix.php }} Tests
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        php: ['8.2']
+        php: ['8.2', '8.3', '8.4']
+        coverage: ['pcov']
 
     steps:
       - uses: actions/checkout@v4
@@ -25,28 +29,31 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          coverage: none
+          coverage: ${{ matrix.coverage }}
           tools: composer:v2
 
       - name: Cache Composer dependencies
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress --no-interaction
 
-      - name: Run tests with JUnit output
+      - name: Run tests with coverage + JUnit output
         run: |
-          mkdir -p test-reports
-          ./vendor/bin/phpunit --log-junit test-reports/junit.xml
+          mkdir -p build/logs
+          ./vendor/bin/phpunit \
+            --coverage-clover build/logs/clover.xml \
+            --coverage-text \
+            --log-junit test-reports/junit.xml
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: test-reports-php${{ matrix.php }}
           path: test-reports
           retention-days: 5
 
@@ -54,7 +61,40 @@ jobs:
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: PHPUnit Tests
+          name: PHPUnit Tests (PHP ${{ matrix.php }})
           path: test-reports/junit.xml
           reporter: java-junit
           fail-on-error: false
+
+  static-analysis:
+    name: Static Analysis & Style
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-analysis-${{ hashFiles('**/composer.lock') }}
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Validate composer.json
+        run: composer validate --strict --no-check-lock
+
+      - name: Check code style (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+
