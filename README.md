@@ -9,7 +9,7 @@
 [![Docs](https://github.com/emleonstz/sim-rating/actions/workflows/docs.yml/badge.svg)](https://emleonstz.github.io/sim-rating/)
 [![License](https://img.shields.io/github/license/emleonstz/sim-rating.svg)](https://github.com/emleonstz/sim-rating/blob/main/LICENSE)
 
-📖 **Documentation:** <https://emleonstz.github.io/sim-rating/>
+**Documentation:** <https://emleonstz.github.io/sim-rating/>
 
 Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ratings. It supports multiple display formats (stars, bars, JSON) and is highly customizable and works with any php frame work.
 
@@ -28,15 +28,15 @@ Sim-Rating is a lightweight,PHP library for displaying and calculating 5-star ra
 
 ## Features
 
-- 🎯 Works in any Framework: works with Laravel, Symfony, CodeIgniter, or plain PHP
-- ⭐ Multiple output formats (HTML stars, HTML bars, standalone SVG, JSON)
-- 🎨 Customizable colors, sizes and styles (validated & escaped)
-- 📊 Calculate averages, totals and distributions
-- 🔒 Secure by default — all rendered values are escaped (XSS-safe)
-- 🧪 Type-safe API with backed enums (`StarKey`, `DisplayType`)
-- ♿ Accessible markup (`role="img"`, `aria-label`)
-- 📱 Responsive and mobile-friendly
-- ✅ Fully unit tested, statically analysed (PHPStan level 8) & style-checked (Pint)
+- Works in any framework: Laravel, Symfony, CodeIgniter, or plain PHP
+- Multiple output formats (HTML stars, HTML bars, standalone SVG, JSON)
+- Customizable colors, sizes and styles (validated & escaped)
+- Calculate averages, totals and distributions
+- Secure by default — all rendered values are escaped (XSS-safe)
+- Type-safe API with backed enums (`StarKey`, `DisplayType`)
+- Accessible markup (`role="img"`, `aria-label`)
+- Responsive and mobile-friendly
+- Fully unit tested, statically analysed (PHPStan level 8) & style-checked (Pint)
 
 ## Installation
 
@@ -48,7 +48,7 @@ Install via Composer:
 composer require emleons/sim-rating
 ```
 
-### 🌟 Basic Implementation
+### Basic Implementation
 ```php
 require('vendor/autoload.php');
 use Emleons\SimRating\Rating;
@@ -68,7 +68,7 @@ $rating = new Rating($ratings);
 echo $rating->render(); // Defaults to HTML stars
 ```
 
-### 📊 Output Formats
+### Output Formats
 ```php
 // As interactive HTML stars
 echo $rating->render('html', [
@@ -94,7 +94,7 @@ echo $rating->render('html', [
 ]);
 ```
 
-### 🎨 Customization Options
+### Customization Options
 #### Star Display Options
 ```php
 new Rating($ratings, [
@@ -117,7 +117,7 @@ new Rating($ratings, [
 ]);
 ```
 
-### ⚙️ All Configuration Options
+### All Configuration Options
 
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
@@ -132,7 +132,7 @@ new Rating($ratings, [
 | `bar_spacing` | string | No | `8px` | Space between bars |
 | `bar_show_percentages` | bool | No | `true` | Show percentages |
 
-### 🔄 Updating Options
+### Updating Options
 ```php
 $rating->setOptions([
     'color' => '#e74c3c', // Change to red
@@ -157,14 +157,14 @@ $currentOptions = $rating->getOptions();
 {!! $rating->render() !!}
 ```
 
-### 💡 Important Tips
+### Important Tips
 1. Rating keys are optional by default missing buckets count as `0`. Enable the `strict` option if you want to require all five.
 2. Set `show_summary` based on your display needs
 3. Use `interactive` only when you need user ratings
 4. For bars, customize heights and spacing to match your design
 5. All `color`/`size` values are validated and escaped automatically — invalid values safely fall back to defaults.
 
-### 🔒 Security
+### Security
 sim-rating escapes **every** value that ends up in the rendered markup, so it is safe to render data that originates from user input. Colour and size options are validated against strict allow-lists and fall back to safe defaults if they do not match.
 
 ```php
@@ -176,23 +176,23 @@ $rating = new Rating(['five_star' => 1], [
 echo $rating->render(); // safe HTML
 ```
 
-### 🚨 Common Errors
+### Common Errors
 ```php
-// ⚠️ Partial ratings are allowed by default (missing buckets = 0).
+// Partial ratings are allowed by default (missing buckets = 0).
 //    Enable 'strict' to require all five keys:
 new Rating(['one_star' => 10], ['strict' => true]); // throws: Missing required rating key
 
-// ⚠️ Unknown rating keys always throw
+// Unknown rating keys always throw
 new Rating(['six_star' => 5]); // throws: Invalid rating key: six_star
 
-// ⚠️ Invalid colour values are safely rejected and fall back to the default
+// Invalid colour values are safely rejected and fall back to the default
 new Rating($ratings, ['color' => 'red; } body { display:none']); // uses #ffc107
 
-// ❌ Wrong option name (silently ignored)
+// Wrong option name (silently ignored)
 new Rating($ratings, ['colour' => '#fff']); // Should be 'color'
 ```
 
-## 🎨 Styling
+## Styling
 
 Every rendered element carries a stable, namespaced **BEM class** so you can
 style it from your own CSS file. This is the recommended way to customize the
