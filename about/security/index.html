@@ -933,9 +933,7 @@
 
 
 <h1 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h1>
-<p>Rating widgets sit on public pages and often display data that came from
-visitors. sim-rating treats every value as untrusted until it has been
-checked. This page describes the model so you can review it with confidence.</p>
+<p>Rating widgets sit on public pages and often display data. Always validate input using appropriate filters and escape output before rendering it on a page. Never allow unchecked user input to reach the browser.</p>
 <h2 id="what-is-escaped">What is escaped<a class="headerlink" href="#what-is-escaped" title="Permanent link">&para;</a></h2>
 <p>All rendered output passes through the <code>Escaper</code> helper before it reaches
 the page. Colours, sizes, spacing values, labels, counts, percentages, ids,
